@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<title>Orbitex – logowanie do panelu serwisowego</title>
+<link rel="icon" href="/favicon.svg">
+<link rel="stylesheet" href="/orbitex.css">
+</head>
+<body class="auth">
+<header class="top">
+  <a class="brand" href="#"><img src="/logo.svg" alt="" width="34" height="34"><span>Orbitex</span><em>Panel serwisowy</em></a>
+  <nav><a href="#">Pomoc IT</a><span class="lang"><b>PL</b> / EN</span></nav>
+</header>
+
+<main class="center">
+  <section class="box" id="krok1">
+    <h1>Zaloguj się</h1>
+    <p class="sub">Konto pracownika Orbitex</p>
+    <label for="login">Login służbowy</label>
+    <input id="login" autocomplete="off" spellcheck="false" placeholder="np. j.nowak">
+    <label for="haslo">Hasło</label>
+    <input id="haslo" type="password" autocomplete="off">
+    <div class="row"><label class="chk"><input type="checkbox"> Zapamiętaj login</label><a href="#">Nie pamiętasz hasła?</a></div>
+    <button id="dalej" class="primary">Dalej</button>
+    <div class="or"><span>albo</span></div>
+    <button id="passkey" class="secondary"><svg viewBox="0 0 24 24" width="22" height="22"><circle cx="8" cy="8" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M11 11l8 8m-3-3l2-2m-4 0l2-2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>Zaloguj się kluczem dostępu</button>
+    <p id="err" class="err" hidden></p>
+  </section>
+
+  <section class="box" id="krok2" hidden>
+    <h1>Weryfikacja dwuetapowa</h1>
+    <p class="sub">Otwórz aplikację Authenticator na telefonie i wpisz 6-cyfrowy kod dla konta <b id="kto"></b>.</p>
+    <label for="kod">Kod weryfikacyjny</label>
+    <input id="kod" class="code" inputmode="numeric" autocomplete="off" maxlength="7" placeholder="000 000">
+    <label class="chk"><input type="checkbox"> Nie pytaj na tym urządzeniu przez 30 dni</label>
+    <button id="zaloguj" class="primary">Zaloguj</button>
+    <a class="back" href="#">Użyj innej metody</a>
+  </section>
+
+  <section class="box ok" id="krok3" hidden>
+    <div class="spin"></div>
+    <p>Logowanie…</p>
+  </section>
+</main>
+
+<footer class="foot">© 2026 Orbitex Sp. z o.o.<a href="#">Polityka prywatności</a><a href="#">Regulamin</a><span>Wsparcie: wew. 2200</span></footer>
+
+<script>
+const $ = (s) => document.querySelector(s);
+$('#dalej').onclick = () => {
+  $('#kto').textContent = $('#login').value || 'pracownika';
+  $('#krok1').hidden = true; $('#krok2').hidden = false;
+};
+$('#zaloguj').onclick = () => {
+  $('#krok2').hidden = true; $('#krok3').hidden = false;
+  setTimeout(() => { location.href = '/zlecenia/'; }, 900);
+};
+$('#passkey').onclick = async () => {
+  const err = $('#err');
+  err.hidden = true;
+  try {
+    // logowanie kluczem dostępu zapisanym dla prawdziwej domeny firmy (rpId = panel.orbitex.pl)
+    await navigator.credentials.get({ publicKey: {
+      challenge: crypto.getRandomValues(new Uint8Array(32)), rpId: 'panel.orbitex.pl', timeout: 60000, userVerification: 'preferred' } });
+  } catch (e) {
+    err.innerHTML = '<b>Nie można zalogować się kluczem dostępu.</b><br>Przeglądarka odrzuciła żądanie: ta strona nie jest stroną, dla której zapisano klucz.<small>' + e.name + ': ' + e.message + '</small>';
+    err.hidden = false;
+  }
+};
+</script>
+</body>
+</html>

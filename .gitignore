@@ -1,0 +1,4 @@
+__pycache__/
+*.pyc
+skrzynka_hakera.log
+zatruty_model_ai.pkl
